@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   AlSeraj — White & Gold Luxury design tokens (source: /DESIGN_TOKENS.md)
+   ========================================================================= */
+:root {
+  --gold-50: #fbf8f3;
+  --gold-100: #f5eee3;
+  --gold-200: #e9dcc6;
+  --gold-300: #d3bf9a;
+  --gold-500: #b8956f;
+  --gold-600: #a27a5b;
+  --gold-700: #86634a;
+  --gold-gradient: linear-gradient(135deg, #d3bf9a 0%, #b8956f 50%, #a27a5b 100%);
+  --green-900: #2c3930;
+  --green-700: #46594c;
+  --gray-25: #fcfcfb;
+  --gray-50: #f7f6f4;
+  --gray-100: #efeeeb;
+  --gray-200: #e2e0dc;
+  --gray-400: #a5a29c;
+  --gray-500: #7c7973;
+  --gray-700: #4d4a45;
+  --ink: #231f20;
+  --success: #3f7d5a;
+  --warning: #b7791f;
+  --danger: #b4443c;
+  --info: #4a6a8a;
+  --shadow-xs: 0 1px 2px rgba(44, 57, 48, 0.04);
+  --shadow-sm: 0 2px 8px rgba(44, 57, 48, 0.05);
+  --shadow-md: 0 8px 24px rgba(44, 57, 48, 0.07);
+  --shadow-lg: 0 20px 48px rgba(44, 57, 48, 0.1);
+  --shadow-gold: 0 0 0 rgba(0, 0, 0, 0); /* buttons are flat: no coloured glow */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --font-sans: var(--font-plex), system-ui, sans-serif;
+  --font-display: var(--font-alexandria), var(--font-plex), sans-serif;
+
+  --color-gold-50: var(--gold-50);
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-brand-green: var(--green-900);
+  --color-brand-green-700: var(--green-700);
+  --color-ink: var(--ink);
+  --color-gray-25: var(--gray-25);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-700: var(--gray-700);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-gold: var(--shadow-gold);
+  --ease-lux: var(--ease-out);
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #ffffff;
+  color: var(--green-900);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--gold-200);
+  color: var(--green-900);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.container-lux {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+@media (min-width: 768px) {
+  .container-lux { padding-inline: 24px; }
+}
+@media (min-width: 1280px) {
+  .container-lux { padding-inline: 32px; }
+}
+
+.text-gold-gradient {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Solid bronze instead of the old beige gradient (class name kept so every usage updates at once). */
+.bg-gold-gradient { background: var(--gold-700); transition: background-color 0.3s var(--ease-out); }
+a.bg-gold-gradient:hover, button.bg-gold-gradient:hover:not(:disabled) { background: var(--green-900); }
+
+.gold-rule {
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--gold-500);
+}
+
+.pattern-band {
+  background-image: url("/brand/pattern-gold-faint.png");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}
+
+.watermark-bg {
+  background-image: url("/brand/watermark-outline-faint.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* Elegant reveal for sections (respecting reduced motion) */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { animation: rise 0.7s var(--ease-out) both; }
+
+@keyframes kenburns {
+  from { transform: scale(1.06); }
+  to { transform: scale(1); }
+}
+.kenburns { animation: kenburns 7s var(--ease-out) both; }
+
+@keyframes shimmer {
+  100% { transform: translateX(-100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--gray-100);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Thin, discreet scrollbars for app panels */
+.scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 6px; }
+
+/* Prose for CMS rich text */
+.prose-lux p { margin-block: 0.9em; }
+.prose-lux { color: var(--gray-700); font-size: 1.0625rem; line-height: 1.95; }
+
+/* =========================================================================
+   Branded loader — the hexagon's six triangles switch on like light fixtures
+   ========================================================================= */
+.seraj-mark { position: relative; display: inline-block; isolation: isolate; }
+.seraj-mark > span { position: absolute; inset: 0; }
+.seraj-unlit, .seraj-wedge {
+  background: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
+}
+.seraj-unlit { opacity: 0.13; filter: grayscale(1); }
+.seraj-wedge {
+  opacity: 0.13;
+  animation: seraj-wedge 2.6s var(--ease-out) infinite;
+  will-change: opacity, filter;
+}
+/* Wedges = hexagon split at its centre (52% 52%), clockwise from the top. */
+.seraj-wedge-0 { clip-path: polygon(52% 52%, 20% -16%, 84% -16%); animation-delay: 0s; }
+.seraj-wedge-1 { clip-path: polygon(52% 52%, 84% -16%, 123% 52%); animation-delay: 0.16s; }
+.seraj-wedge-2 { clip-path: polygon(52% 52%, 123% 52%, 84% 119%); animation-delay: 0.32s; }
+.seraj-wedge-3 { clip-path: polygon(52% 52%, 84% 119%, 20% 119%); animation-delay: 0.48s; }
+.seraj-wedge-4 { clip-path: polygon(52% 52%, 20% 119%, -19% 52%); animation-delay: 0.64s; }
+.seraj-wedge-5 { clip-path: polygon(52% 52%, -19% 52%, 20% -16%); animation-delay: 0.8s; }
+@keyframes seraj-wedge {
+  0%, 6% { opacity: 0.13; filter: brightness(0.95) saturate(0.6); }
+  18% { opacity: 1; filter: brightness(1.3) saturate(1.15) drop-shadow(0 0 10px rgba(226, 190, 130, 0.85)); }
+  32%, 62% { opacity: 1; filter: brightness(1.08) saturate(1) drop-shadow(0 0 4px rgba(211, 191, 154, 0.55)); }
+  84%, 100% { opacity: 0.13; filter: brightness(0.95) saturate(0.6); }
+}
+.seraj-halo {
+  inset: -45% !important;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(233, 205, 150, 0.55), rgba(211, 191, 154, 0.18) 55%, transparent 75%);
+  animation: seraj-halo 2.6s ease-in-out infinite;
+}
+@keyframes seraj-halo {
+  0%, 100% { opacity: 0.25; transform: scale(0.82); }
+  45% { opacity: 1; transform: scale(1.06); }
+}
+.seraj-beam {
+  -webkit-mask: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
+  mask: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 246, 225, 0.95) 50%, transparent 62%) 0 0 / 260% 100% no-repeat;
+  mix-blend-mode: screen;
+  animation: seraj-beam 2.6s ease-in-out infinite;
+}
+@keyframes seraj-beam {
+  0%, 35% { background-position: 130% 0; }
+  70%, 100% { background-position: -30% 0; }
+}
+.seraj-track {
+  position: relative; display: block; width: 132px; height: 2px; overflow: hidden;
+  border-radius: 2px; background: var(--gold-100);
+}
+.seraj-track::after {
+  content: ""; position: absolute; inset-block: 0; width: 42%;
+  background: linear-gradient(90deg, transparent, var(--gold-500), #f3dcae, var(--gold-500), transparent);
+  box-shadow: 0 0 8px rgba(211, 191, 154, 0.9);
+  animation: seraj-track 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes seraj-track { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
+
+/* First-visit splash */
+#seraj-splash {
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center;
+  background: radial-gradient(120% 80% at 50% 42%, #fffdf9 0%, #fbf8f3 55%, #f5eee3 100%);
+  transition: opacity 0.6s var(--ease-out), visibility 0.6s;
+}
+.seraj-splash-inner { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.seraj-wordmark {
+  display: block; width: 190px; height: 74px;
+  background: url("/brand/seraj-wordmark-loader.webp") center / contain no-repeat;
+  animation: rise 0.9s var(--ease-out) 0.25s both;
+}
+html[data-splash="out"] #seraj-splash { opacity: 0; visibility: hidden; }
+html[data-splash="out"] .seraj-splash-inner { transform: scale(1.04); transition: transform 0.6s var(--ease-out); }
+html[data-splash="off"] #seraj-splash { display: none; }
+/* Failsafe: never let the splash linger, even if scripts are blocked. */
+#seraj-splash { animation: seraj-splash-failsafe 0.6s ease 4s forwards; }
+@keyframes seraj-splash-failsafe { to { opacity: 0; visibility: hidden; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .seraj-wedge { animation: none !important; opacity: 1; filter: none; }
+  .seraj-halo, .seraj-beam, .seraj-track::after { animation: none !important; }
+}
+
+/* Mobile bottom-sheet dialogs */
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* Phones: any field below 16px makes iOS/Android zoom the page on focus and stay zoomed. */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { font-size: 16px !important; }
+}
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* Grid columns never stretch past the screen: wide content (tables) scrolls inside its own card. */
+.grid > * { min-width: 0; }
+
+/* Warehouse request journey — the current step glows */
+.journey-current { box-shadow: 0 0 0 4px rgba(70, 89, 76, 0.14), 0 0 18px rgba(70, 89, 76, 0.45); }
+.journey-current::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 9999px;
+  border: 2px solid rgba(70, 89, 76, 0.45); animation: journey-pulse 2s var(--ease-out) infinite;
+}
+.journey-warn { box-shadow: 0 0 0 4px rgba(183, 121, 31, 0.14), 0 0 18px rgba(183, 121, 31, 0.45); }
+.journey-warn::after { border-color: rgba(183, 121, 31, 0.5); }
+.journey-danger { box-shadow: 0 0 0 4px rgba(180, 68, 60, 0.12), 0 0 14px rgba(180, 68, 60, 0.35); }
+.journey-danger::after { display: none; }
+@keyframes journey-pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.55); opacity: 0; } }
