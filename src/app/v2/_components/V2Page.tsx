@@ -7,6 +7,7 @@ import { SocialLinks } from "@/components/site/SocialLinks";
 import type { Media } from "@/lib/types";
 import type { V2Content } from "../_lib/content";
 import { useV2Motion } from "./motion";
+import { SerajOutline } from "./SerajOutline";
 
 // WebGL is client-only and split out of the main bundle; the CSS stage stands in until it is ready.
 const Scene = dynamic(() => import("./Scene"), { ssr: false, loading: () => null });
@@ -63,20 +64,6 @@ export function V2Page({ content: c }: { content: V2Content }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [webgl, setWebgl] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
-  // Day (white) is the default; night is the original dark showroom. The choice is remembered per browser.
-  const [theme, setTheme] = useState<"day" | "night">("day");
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem("v2-theme") === "night") setTheme("night");
-    } catch {}
-  }, []);
-  const toggleTheme = () => {
-    const next = theme === "day" ? "night" : "day";
-    setTheme(next);
-    try {
-      window.localStorage.setItem("v2-theme", next);
-    } catch {}
-  };
 
   useV2Motion(root);
 
@@ -97,7 +84,7 @@ export function V2Page({ content: c }: { content: V2Content }) {
   const links = [{ slug: "", title: "الرئيسية" }, ...c.menu];
 
   return (
-    <div className="v2" data-theme={theme} ref={root}>
+    <div className="v2" ref={root}>
       <a href="#v2-main" className="v2-skip">تخطَّ إلى المحتوى</a>
 
       <svg className="v2-defs" aria-hidden focusable="false">
@@ -109,8 +96,14 @@ export function V2Page({ content: c }: { content: V2Content }) {
 
       {/* ---------- Loader ---------- */}
       <div className="v2-loader" aria-hidden>
+        <span className="v2-loader-glow" />
+        <span className="v2-loader-rays" />
+        <span className="v2-loader-mark">
+          <SerajOutline id="v2-lm" />
+        </span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/seraj-icon-loader.webp" alt="" className="v2-loader-mark" width={72} height={67} />
+        <img src="/brand/seraj-wordmark-white.webp" alt="" className="v2-loader-word" width={180} height={70} />
+        <span className="v2-loader-tag">أنظمة الإضاءة · Lighting Systems</span>
         <span className="v2-loader-line"><i /></span>
         <span className="v2-loader-count" dir="ltr">00</span>
         <span className="v2-loader-flash" />
@@ -120,30 +113,31 @@ export function V2Page({ content: c }: { content: V2Content }) {
       <div className="v2-stage" aria-hidden>
         {c.hero.image && <Img m={c.hero.image} className="v2-stage-img" eager sizes="100vw" />}
         <div className="v2-stage-glow" />
-        <div className={`v2-canvas${sceneReady ? " is-ready" : ""}`}>{webgl && <Scene key={theme} theme={theme} onReady={() => setSceneReady(true)} />}</div>
+        <div className={`v2-canvas${sceneReady ? " is-ready" : ""}`}>{webgl && <Scene onReady={() => setSceneReady(true)} />}</div>
       </div>
       <div className="v2-grain" aria-hidden />
       <div className="v2-vignette" aria-hidden />
       <div className="v2-progress" aria-hidden><i /></div>
       <div className="v2-cursor" aria-hidden><i /></div>
+      <ol className="v2-chapters" aria-hidden>
+        {[c.about.eyebrow || "من نحن", c.collections.eyebrow || "البراندات", "تجربة الضوء", c.craft.eyebrow || "لماذا نحن", c.projects.eyebrow || "المشاريع"].map((t, i) => (
+          <li key={i} data-chapter={i}><span className="v2-num">{pad(i + 1)}</span><em>{t}</em></li>
+        ))}
+      </ol>
 
       {/* ---------- Navigation ---------- */}
       <header className="v2-nav">
         <Link href="/v2" className="v2-nav-logo" aria-label={c.company.name}>
+          <SerajOutline id="v2-nm" className="v2-nav-mark" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal-white.png" alt={`${c.company.name} — ${c.company.name_en}`} height={44} className="v2-logo-night" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal.png" alt={`${c.company.name} — ${c.company.name_en}`} height={44} className="v2-logo-day" />
+          <img src="/brand/seraj-wordmark-white.webp" alt={`${c.company.name} — ${c.company.name_en}`} width={113} height={44} className="v2-nav-word" />
+          <span className="v2-nav-tag">إضاءة · Lighting</span>
         </Link>
         <nav className="v2-nav-links" aria-label="القائمة الرئيسية">
           {links.map((l) => (
             <Link key={l.slug} href={`/${l.slug}`}>{l.title}</Link>
           ))}
         </nav>
-        <button type="button" className="v2-theme" onClick={toggleTheme} aria-label={theme === "day" ? "التبديل إلى الوضع الليلي" : "التبديل إلى الوضع النهاري"}>
-          <i aria-hidden />
-          {theme === "day" ? "ليلي" : "نهاري"}
-        </button>
         <Link href="/login" className="v2-nav-login">بوابة الموظفين</Link>
         <button type="button" className="v2-nav-toggle" aria-expanded={menuOpen} aria-controls="v2-menu" onClick={() => setMenuOpen((o) => !o)}>
           {menuOpen ? "إغلاق" : "القائمة"}
@@ -165,9 +159,7 @@ export function V2Page({ content: c }: { content: V2Content }) {
         {/* ---------- Hero ---------- */}
         <section className="v2-hero" aria-labelledby="v2-hero-title">
           <div className="v2-hero-inner">
-            {c.hero.eyebrow && (
-              <p className="v2-eyebrow v2-hero-eyebrow"><span className="v2-num">00</span><span className="v2-rule" aria-hidden />{c.hero.eyebrow}</p>
-            )}
+            <p className="v2-eyebrow v2-hero-eyebrow"><span className="v2-num">00</span><span className="v2-rule" aria-hidden />{c.hero.eyebrow || "أنظمة الإضاءة"}<span className="v2-hero-tag" dir="ltr">Lighting Systems</span></p>
             <h1 id="v2-hero-title" className="v2-hero-title">{c.hero.title}</h1>
             <div className="v2-hero-foot">
               {c.hero.text && <p>{c.hero.text}</p>}
@@ -216,6 +208,20 @@ export function V2Page({ content: c }: { content: V2Content }) {
             )}
           </div>
         </section>
+
+        {/* ---------- Cinematic interlude: the frame opens to full bleed ---------- */}
+        {c.hero.image && (
+          <section className="v2-interlude" aria-label={c.company.tagline ?? c.company.name}>
+            <div className="v2-interlude-frame">
+              <Img m={c.hero.image} alt="" sizes="100vw" />
+              <span className="v2-interlude-shade" aria-hidden />
+            </div>
+            <div className="v2-interlude-caption">
+              <span className="v2-num">{c.company.name_en}</span>
+              {c.company.tagline && <p dir="auto">{c.company.tagline}</p>}
+            </div>
+          </section>
+        )}
 
         {/* ---------- 02 Collections (horizontal) ---------- */}
         <section className="v2-coll" aria-labelledby="v2-coll-title">
@@ -371,9 +377,7 @@ export function V2Page({ content: c }: { content: V2Content }) {
           <div className="v2-footer-grid">
             <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/seraj-horizontal-white.png" alt={c.company.name} className="v2-footer-logo v2-logo-night" loading="lazy" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/seraj-horizontal.png" alt={c.company.name} className="v2-footer-logo v2-logo-day" loading="lazy" />
+              <img src="/brand/seraj-horizontal-white.webp" alt={c.company.name} className="v2-footer-logo" width={191} height={52} loading="lazy" />
               <p>{c.company.description || c.footerText}</p>
               <SocialLinks social={c.company.social} className="v2-social" />
             </div>
@@ -395,6 +399,7 @@ export function V2Page({ content: c }: { content: V2Content }) {
               </ul>
             </div>
           </div>
+          <div className="v2-footer-mark" aria-hidden dir="ltr">{c.company.name_en}</div>
           <div className="v2-footer-base">
             <span>© {new Date().getFullYear()} {c.company.name} — {c.company.name_en}. جميع الحقوق محفوظة.</span>
             <span className="v2-credit">

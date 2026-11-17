@@ -23,8 +23,11 @@ const alexandria = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-  title: { default: "السراج المضيء | أنظمة الإضاءة", template: "%s" },
-  description: "السراج المضيء — حلول الإنارة والتجهيزات الكهربائية.",
+  applicationName: "السراج المضيء — أنظمة الإضاءة",
+  title: { default: "السراج المضيء | أنظمة الإضاءة والإنارة", template: "%s" },
+  description: "السراج المضيء — شركة متخصصة في أنظمة الإضاءة والإنارة: ثريات وتريات، سبوتات، إنارة خطية وخارجية، وحلول إضاءة متكاملة للمشاريع السكنية والتجارية والفندقية.",
+  keywords: ["إضاءة", "إنارة", "أنظمة الإضاءة", "ثريات", "سبوتات", "إنارة خارجية", "lighting", "lighting systems", "السراج المضيء"],
+  openGraph: { siteName: "السراج المضيء — أنظمة الإضاءة", locale: "ar_AR", type: "website" },
 };
 
 export const viewport: Viewport = { themeColor: "#ffffff", width: "device-width", initialScale: 1 };
@@ -34,7 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl" className={`${plex.variable} ${alexandria.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preload" as="image" href="/brand/seraj-icon-loader.webp" type="image/webp" />
       </head>
       <body>
         <SerajSplash />

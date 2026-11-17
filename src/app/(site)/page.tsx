@@ -7,8 +7,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const home = await getHome();
   const seo = home?.page?.seo;
   return {
-    title: seo?.meta_title || "السراج المضيء",
-    description: seo?.meta_description || undefined,
+    title: seo?.meta_title || "السراج المضيء | أنظمة الإضاءة والإنارة",
+    description: seo?.meta_description || "السراج المضيء — حلول إضاءة وإنارة متكاملة للمشاريع السكنية والتجارية والفندقية.",
     robots: seo?.indexable === false ? { index: false } : undefined,
     openGraph: seo?.og_image ? { images: [seo.og_image.lg] } : undefined,
   };

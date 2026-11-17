@@ -2,14 +2,14 @@
 
 import { Environment, Lightformer } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Bloom, EffectComposer, Noise, ToneMapping, Vignette } from "@react-three/postprocessing";
-import { BlendFunction, ToneMappingMode } from "postprocessing";
+import { Bloom, EffectComposer, ToneMapping, Vignette } from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { SCENE_ACTIVE_EVENT, sceneState as S } from "../_lib/state";
 
 const AMBER = new THREE.Color("#ffb45e"); // ≈ 2700–3000K
-const BG = { night: "#120f0d", day: "#ffffff" };
+const BG = { night: "#000000", day: "#ffffff" };
 const DAY_GLOW = new THREE.Color("#f3ae62"); // the same warm light, as a tint on white instead of an additive glow
 type Theme = "day" | "night";
 const FOV = 35;
@@ -155,10 +155,27 @@ function Lamp({ lite, day }: { lite: boolean; day: boolean }) {
     if (dustGroup.current) dustGroup.current.rotation.y += dt * 0.04;
     scene.environmentIntensity = day ? 0.9 : 0.1 + L * 0.5;
 
-    // --- camera: slow pull-back through the philosophy, far away for the closing point of light ---
-    const z = CAM_Z + S.away * 3.6 + S.end * 12;
-    camera.position.set(S.px * 0.12 * (1 - S.end), 0.35 + S.away * 0.5 + S.py * -0.05, z);
-    camera.lookAt(0, 0.15 - S.end * 1.5, 0); // the closing point of light sits behind the headline
+    // --- camera: a cinematographer's path ---
+    // crane down from the ceiling as the loader clears → slow push-in while the light rises →
+    // arc around the fixtures and pull back through the philosophy → far away for the closing point of light.
+    const t = state.clock.elapsedTime;
+    const crane = 1 - smooth(S.intro, 0, 1);
+    const push = smooth(S.hero, 0, 1) * (1 - S.away);
+    const orbit = (S.hero * 0.18 - S.away * 0.46 + S.mid * 0.22) * (1 - S.end);
+    const radius = CAM_Z + crane * 2.6 - push * 1.6 + S.away * 3.6 + S.end * 12;
+    const hand = 1 - S.end; // a breath of hand-held drift, gone for the final locked-off shot
+    const hx = (Math.sin(t * 0.31) * 0.035 + Math.sin(t * 0.83) * 0.012) * hand;
+    const hy = (Math.sin(t * 0.27 + 1.3) * 0.025 + Math.sin(t * 0.71) * 0.01) * hand;
+    camera.position.set(
+      Math.sin(orbit) * radius + S.px * 0.14 * hand + hx,
+      0.35 + crane * 3.4 + S.away * 0.5 - push * 0.25 + S.py * -0.06 + hy,
+      Math.cos(orbit) * radius,
+    );
+    camera.lookAt(0, 0.15 - S.end * 1.5 + crane * 1.6, 0); // the closing point of light sits behind the headline
+    camera.rotateZ((Math.sin(t * 0.21) * 0.006 - orbit * 0.05) * hand); // gentle roll into the arc
+    const cam = camera as THREE.PerspectiveCamera;
+    const fov = FOV + crane * 6 - push * 3.5; // subtle dolly-zoom on the push-in
+    if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   });
 
   return (
@@ -229,6 +246,63 @@ function Lamp({ lite, day }: { lite: boolean; day: boolean }) {
   );
 }
 
+/** A constellation of smaller pendants deeper in the room: they switch on one after another and give the camera moves real depth. */
+const PENDANTS: { p: [number, number, number]; r: number; on: number }[] = [
+  { p: [2.9, 1.5, -4.5], r: 0.22, on: 0.22 },
+  { p: [-4.6, 1.1, -5.5], r: 0.2, on: 0.34 },
+  { p: [5.6, 0.4, -7.5], r: 0.24, on: 0.46 },
+  { p: [0.9, 2.3, -9.5], r: 0.2, on: 0.56 },
+  { p: [-7.2, 1.9, -10], r: 0.26, on: 0.66 },
+  { p: [8.6, 2.1, -12], r: 0.22, on: 0.74 },
+];
+
+function Pendants() {
+  const groups = useRef<(THREE.Group | null)[]>([]);
+  const bulbs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
+  const halos = useMemo(() => PENDANTS.map(() => lightMaterial(false, DISC_VERT, DISC_FRAG, { uFalloff: { value: 6 } })), []);
+  useEffect(() => () => halos.forEach((m) => m.dispose()), [halos]);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    PENDANTS.forEach((d, i) => {
+      // each fixture warms up with a short flicker as the hero light rises
+      const k = smooth(S.hero, d.on, d.on + 0.12);
+      const flicker = k > 0 && k < 1 ? 0.75 + 0.25 * Math.sin(t * 40 + i * 7) : 1;
+      const L = (S.intro * 0.04 + k * 0.85 * flicker) * (1 - 0.55 * S.mid) * (1 - S.end);
+      bulbs.current[i]?.color.copy(AMBER).multiplyScalar(0.12 + L * 4);
+      halos[i].uniforms.uIntensity.value = L * 0.5;
+      const g = groups.current[i];
+      if (g) g.rotation.z = Math.sin(t * 0.4 + i) * 0.012;
+    });
+  });
+
+  return (
+    <>
+      {PENDANTS.map((d, i) => (
+        <group key={i} ref={(el) => { groups.current[i] = el; }} position={[d.p[0], 7, d.p[2]]}>
+          <mesh position={[0, (d.p[1] - 7) / 2, 0]}>
+            <cylinderGeometry args={[0.006, 0.006, 7 - d.p[1], 6]} />
+            <meshStandardMaterial color="#b8956f" metalness={1} roughness={0.3} />
+          </mesh>
+          <group position={[0, d.p[1] - 7, 0]}>
+            <mesh>
+              <sphereGeometry args={[d.r, 24, 24]} />
+              <meshPhysicalMaterial color="#fff4e2" roughness={0.12} transparent opacity={0.14} depthWrite={false} />
+            </mesh>
+            <mesh>
+              <sphereGeometry args={[d.r * 0.22, 12, 12]} />
+              <meshBasicMaterial ref={(m) => { bulbs.current[i] = m; }} color={AMBER} toneMapped={false} />
+            </mesh>
+            <mesh material={halos[i]} renderOrder={3}>
+              <planeGeometry args={[d.r * 9, d.r * 9]} />
+            </mesh>
+          </group>
+        </group>
+      ))}
+    </>
+  );
+}
+
 export default function Scene({ onReady, theme = "night" }: { onReady?: () => void; theme?: Theme }) {
   const day = theme === "day";
   const [active, setActive] = useState(true);
@@ -258,6 +332,7 @@ export default function Scene({ onReady, theme = "night" }: { onReady?: () => vo
     >
       <color attach="background" args={[BG[theme]]} />
       <Lamp lite={lite} day={day} />
+      <Pendants />
       {/* procedural reflections only: no HDR download, no extra real lights */}
       <Environment resolution={64} frames={1} background={false}>
         <Lightformer form="rect" intensity={2.2} color="#ffd9a8" position={[4, 2, 3]} scale={[1.2, 6, 1]} />
@@ -267,7 +342,6 @@ export default function Scene({ onReady, theme = "night" }: { onReady?: () => vo
       {!lite && !day && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur intensity={0.62} luminanceThreshold={0.7} luminanceSmoothing={0.25} radius={0.72} />
-          <Noise premultiply={false} blendFunction={BlendFunction.SCREEN} opacity={0.035} />
           <Vignette offset={0.28} darkness={0.72} />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>

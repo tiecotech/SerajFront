@@ -15,6 +15,7 @@ import { useExchange } from "./Price";
 import { useLogout, useMe } from "@/lib/auth";
 import type { Cart, User } from "@/lib/types";
 import { cn, relative } from "@/lib/utils";
+import { SerajLogo } from "@/components/brand/SerajLogo";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
 type NavGroup = { title?: string; items: NavItem[] };
@@ -82,8 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <aside className="flex h-full flex-col bg-white">
       <div className="flex h-[72px] items-center justify-between border-b border-gray-100 px-5">
         <Link href="/app" className="flex items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal.png" alt="السراج المضيء" className="h-10 w-auto" />
+          <SerajLogo id="app" className="h-10" />
         </Link>
         <button className="lg:hidden p-1.5 text-gray-500 cursor-pointer" onClick={() => setOpen(false)} aria-label="إغلاق"><X className="h-5 w-5" /></button>
       </div>

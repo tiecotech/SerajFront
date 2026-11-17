@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import type { Json, Media } from "@/lib/types";
 import { FULL_BLEED_SIZES, mediaSrcSet } from "@/lib/media";
+import { SerajMarkSvg } from "@/components/brand/SerajLogo";
 
 /**
  * Cinematic scroll walkthrough (inspired by "camera glides through lit interiors" sites).
@@ -116,7 +117,7 @@ export function ScrollStory({ content }: { content: Record<string, Json> }) {
   if (!video && scenes.length === 0) return null;
 
   return (
-    <section ref={root} className="relative bg-[#0f1311]" style={{ height: `${Math.max(320, (n + 1) * 105)}vh` }} aria-label={content.final_title || "جولة"}>
+    <section ref={root} className="relative bg-[#0f1311]" style={{ height: `${Math.max(320, (n + 1) * 105)}vh` }} aria-label={content.final_title || "جولة في مشاريع الإضاءة"}>
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {video ? (
           <video ref={videoRef} src={video.url} muted playsInline preload="auto" className="absolute inset-0 h-full w-full object-cover" />
@@ -124,7 +125,7 @@ export function ScrollStory({ content }: { content: Record<string, Json> }) {
           scenes.map((s, i) => (
             <div key={i} ref={(el) => { layers.current[i] = el; }} className="absolute inset-0 overflow-hidden" style={{ opacity: i === 0 ? 1 : 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img ref={(el) => { imgs.current[i] = el; }} src={s.image?.lg || s.image?.url} srcSet={mediaSrcSet(s.image)} sizes={FULL_BLEED_SIZES} alt={s.title || ""} className="absolute inset-0 h-full w-full object-cover will-change-transform" loading={i < 2 ? "eager" : "lazy"} decoding="async" />
+              <img ref={(el) => { imgs.current[i] = el; }} src={s.image?.lg || s.image?.url} srcSet={mediaSrcSet(s.image)} sizes={FULL_BLEED_SIZES} alt={s.title || ""} className="absolute inset-0 h-full w-full object-cover will-change-transform" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "low"} decoding="async" />
               {/* lights off → on */}
               <div ref={(el) => { darks.current[i] = el; }} className="absolute inset-0 bg-[#07090a]" style={{ opacity: 0.72 }} />
               {/* warm light bloom */}
@@ -153,8 +154,8 @@ export function ScrollStory({ content }: { content: Record<string, Json> }) {
         <div ref={veil} className="pointer-events-none absolute inset-0 bg-[#fbf8f3]" style={{ opacity: 0 }} />
         <div ref={finalRef} className="absolute inset-0 flex items-center justify-center px-6 text-center" style={{ opacity: 0 }}>
           <div className="max-w-2xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/seraj-icon.png" alt="" className="mx-auto h-16 w-auto" />
+            <SerajMarkSvg id="story" className="mx-auto h-16 w-auto" />
+            <div className="mt-4 flex items-center justify-center gap-3 text-[12px] tracking-[0.22em] text-gold-600"><span className="h-px w-8 bg-gold-300" />السراج المضيء · أنظمة الإضاءة<span className="h-px w-8 bg-gold-300" /></div>
             {content.final_title && <h2 className="mt-6 text-[30px] md:text-[52px] font-semibold leading-tight text-brand-green">{content.final_title}</h2>}
             <span className="gold-rule mx-auto mt-5" />
             {content.final_text && <p className="mx-auto mt-5 max-w-xl text-[16px] md:text-[18px] leading-8 text-gray-700">{content.final_text}</p>}

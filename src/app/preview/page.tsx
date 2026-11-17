@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PageIntro, PageSections } from "@/components/site/Sections";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { getPreview } from "@/lib/site";
+import { SerajLogo } from "@/components/brand/SerajLogo";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "معاينة المسودة", robots: { index: false, follow: false } };
@@ -38,8 +39,7 @@ export default async function PreviewPage({ searchParams }: Props) {
       </div>
       <header className="border-b border-gray-100 bg-white">
         <div className="container-lux flex h-[72px] items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal.png" alt="" className="h-11" />
+          <SerajLogo id="pv" className="h-11" />
         </div>
       </header>
       <main>

@@ -65,13 +65,45 @@ export function useV2Motion(root: RefObject<HTMLDivElement | null>) {
       return;
     }
     const count = q(".v2-loader-count")[0];
+    const loader = q<HTMLElement>(".v2-loader")[0];
+    const mark = q<HTMLElement>(".v2-loader-mark")[0];
+    const navLogo = q<HTMLElement>(".v2-nav-logo")[0];
+    const navMark = q<HTMLElement>(".v2-nav-mark")[0];
+    const lines = q(".v2-loader .v2-mark-line");
+    const fills = q(".v2-loader .v2-mark-fill");
     const n = { v: 0 };
-    gsap.timeline({ defaults: { ease: "power2.inOut" } })
-      .to(n, { v: 100, duration: 1.05, onUpdate: () => { count.textContent = String(Math.round(n.v)).padStart(2, "0"); } }, 0)
-      .to(q(".v2-loader-line i"), { scaleX: 1, duration: 1.05 }, 0)
-      .to(q(".v2-loader-flash"), { opacity: 1, scale: 1, duration: 0.5, ease: "power3.in" }, 0.85)
-      .to(q(".v2-loader"), { autoAlpha: 0, duration: 0.6, ease: "power2.out" }, 1.3)
-      .to(S, { intro: 1, duration: 1.6, ease: "expo.out" }, 1.25);
+    navLogo?.classList.add("is-hidden");
+    gsap.set(q(".v2-nav-word, .v2-nav-tag"), { autoAlpha: 0 });
+
+    // 1) a hairline of light traces each triangle in turn around the hexagon
+    // 2) every triangle switches on like a bulb (with a short flicker), rays open behind it
+    // 3) the wordmark is drawn out by the light, then the lit mark glides into its place in the header
+    const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+    tl.to(n, { v: 100, duration: 2.1, ease: "power1.inOut", onUpdate: () => { count.textContent = String(Math.round(n.v)).padStart(2, "0"); } }, 0)
+      .to(q(".v2-loader-line i"), { scaleX: 1, duration: 2.1, ease: "power1.inOut" }, 0)
+      .to(q(".v2-loader-glow"), { opacity: 0.45, scale: 0.8, duration: 1.2, ease: "sine.inOut" }, 0)
+      .to(lines, { strokeDashoffset: 0, duration: 0.95, stagger: 0.11, ease: "power2.inOut" }, 0.05)
+      .to(fills, { keyframes: { opacity: [0, 0.95, 0.25, 0.8, 0.4, 1] }, duration: 0.42, stagger: 0.09, ease: "none" }, 0.95)
+      .add(() => loader.classList.add("is-lit"), 1.15)
+      .to(q(".v2-loader-glow"), { opacity: 1, scale: 1.2, duration: 0.8, ease: "expo.out" }, 1.2)
+      .to(q(".v2-loader-rays"), { opacity: 1, duration: 1.2, ease: "power2.out" }, 1.2)
+      .to(q(".v2-loader-word"), { clipPath: "inset(0 0 0 0%)", duration: 0.85, ease: "power3.inOut" }, 1.35)
+      .fromTo(q(".v2-loader-tag"), { opacity: 0, letterSpacing: "0.6em" }, { opacity: 1, letterSpacing: "0.24em", duration: 0.9, ease: "power3.out" }, 1.6)
+      .addLabel("fly", 2.35)
+      .to(q(".v2-loader-word, .v2-loader-tag, .v2-loader-line, .v2-loader-count, .v2-loader-rays"), { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, "fly")
+      .to(q(".v2-loader-glow"), { opacity: 0, duration: 0.7, ease: "power2.out" }, "fly")
+      .to(mark, {
+        duration: 1.05,
+        ease: "expo.inOut",
+        x: () => (navMark ? navMark.getBoundingClientRect().left + navMark.offsetWidth / 2 - (mark.getBoundingClientRect().left + mark.offsetWidth / 2) : 0),
+        y: () => (navMark ? navMark.getBoundingClientRect().top + navMark.offsetHeight / 2 - (mark.getBoundingClientRect().top + mark.offsetHeight / 2) : 0),
+        scale: () => (navMark ? navMark.offsetWidth / mark.offsetWidth : 0.4),
+      }, "fly+=0.1")
+      .to(loader, { backgroundColor: "rgba(0,0,0,0)", duration: 0.9, ease: "power2.inOut" }, "fly+=0.2")
+      .to(S, { intro: 1, duration: 1.8, ease: "expo.out" }, "fly+=0.2")
+      .add(() => { navLogo?.classList.remove("is-hidden"); }, "fly+=1.15")
+      .to(q(".v2-nav-word, .v2-nav-tag"), { autoAlpha: 1, duration: 0.8, stagger: 0.1, ease: "power2.out" }, "fly+=1.05")
+      .set(loader, { autoAlpha: 0 }, "fly+=1.2");
   }, { scope: root });
 
   // ---------- Scroll choreography ----------
@@ -163,6 +195,14 @@ export function useV2Motion(root: RefObject<HTMLDivElement | null>) {
         gsap.to(words.words, { opacity: 1, ease: "none", stagger: 0.1, scrollTrigger: { trigger: q(".v2-phil-text")[0], start: "top 80%", end: "bottom 45%", scrub: 0.6 } });
         gsap.to(S, { away: 1, ease: "none", scrollTrigger: { trigger: q(".v2-phil")[0], start: "top bottom", end: "bottom top", scrub: 1 } });
 
+        // ===== Interlude: a framed picture opens to full bleed as you scroll into it =====
+        const inter = q(".v2-interlude")[0];
+        if (inter) {
+          gsap.fromTo(q(".v2-interlude-frame"), { clipPath: desktop ? "inset(16% 22% 16% 22%)" : "inset(10% 8% 10% 8%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: inter, start: "top bottom", end: "top top", scrub: 1 } });
+          gsap.fromTo(q(".v2-interlude-frame img"), { scale: 1.35 }, { scale: 1, ease: "none", scrollTrigger: { trigger: inter, start: "top bottom", end: "bottom top", scrub: true } });
+          gsap.from(q(".v2-interlude-caption > *"), { autoAlpha: 0, y: 30, duration: 1.4, stagger: 0.12, ease: "power3.out", scrollTrigger: { trigger: inter, start: "top 30%", once: true } });
+        }
+
         // ===== 02 Collections =====
         const coll = q(".v2-coll")[0];
         const track = q<HTMLElement>(".v2-coll-track")[0];
@@ -242,6 +282,22 @@ export function useV2Motion(root: RefObject<HTMLDivElement | null>) {
         gsap.to(S, { end: 1, ease: "none", scrollTrigger: { trigger: ctaSection, start: "top bottom", end: "center center", scrub: 1 } });
         const ctaSplit = SplitText.create(q(".v2-cta-title"), { type: "lines", mask: "lines", linesClass: "v2-line" });
         gsap.from(ctaSplit.lines, { yPercent: 118, opacity: 0, duration: 1.5, ease: "expo.out", stagger: 0.14, scrollTrigger: { trigger: ctaSection, start: "top 45%", once: true } });
+
+        // ===== Chapter rail: lights the section you are in =====
+        const rail = q<HTMLElement>(".v2-chapters")[0];
+        const chapters = q<HTMLElement>(".v2-chapters li");
+        [".v2-phil", ".v2-coll", ".v2-light", ".v2-craft", ".v2-projects"].forEach((sel, i) => {
+          const sec = q(sel)[0];
+          if (!sec || !chapters[i]) return;
+          ScrollTrigger.create({
+            trigger: sec, start: "top 55%", end: "bottom 45%",
+            onToggle: (self) => chapters[i].classList.toggle("is-active", self.isActive),
+          });
+        });
+        if (rail) {
+          ScrollTrigger.create({ trigger: q(".v2-phil")[0], start: "top 60%", endTrigger: q(".v2-projects")[0], end: "bottom 40%", onToggle: (self) => rail.classList.toggle("is-on", self.isActive) });
+          cleanups.push(() => { rail.classList.remove("is-on"); chapters.forEach((c) => c.classList.remove("is-active")); });
+        }
 
         // ===== Pointer-only refinements =====
         if (fine) {

@@ -133,14 +133,8 @@ a.bg-gold-gradient:hover, button.bg-gold-gradient:hover:not(:disabled) { backgro
   background: var(--gold-500);
 }
 
-.pattern-band {
-  background-image: url("/brand/pattern-gold-faint.png");
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-}
-
 .watermark-bg {
-  background-image: url("/brand/watermark-outline-faint.png");
+  background-image: url("/brand/watermark-outline-faint.webp");
   background-repeat: no-repeat;
   background-size: contain;
 }
@@ -151,6 +145,89 @@ a.bg-gold-gradient:hover, button.bg-gold-gradient:hover:not(:disabled) { backgro
   to { opacity: 1; transform: translateY(0); }
 }
 .reveal { animation: rise 0.7s var(--ease-out) both; }
+
+/* Hero copy: each line rises in sequence */
+.reveal > * { animation: rise 0.9s var(--ease-out) both; }
+.reveal > *:nth-child(2) { animation-delay: 0.12s; }
+.reveal > *:nth-child(3) { animation-delay: 0.24s; }
+.reveal > *:nth-child(4) { animation-delay: 0.36s; }
+
+/* =========================================================================
+   Scroll reveals — toggled by <RevealObserver/>. Only hidden when scripting
+   is on, so content is never lost without JS. `--i` staggers siblings.
+   ========================================================================= */
+/* Side-slide reveals start off-screen; clip (not hidden) keeps sticky scenes working. */
+main { overflow-x: clip; }
+
+@media (scripting: enabled) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0);
+    transition: opacity 0.9s var(--ease-out), transform 1.1s var(--ease-out), clip-path 1.3s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  [data-reveal="fade"] { transform: none; }
+  [data-reveal="zoom"] { transform: scale(0.94); }
+  [data-reveal="start"] { transform: translate3d(36px, 0, 0); }
+  [data-reveal="end"] { transform: translate3d(-36px, 0, 0); }
+  [data-reveal].is-in { opacity: 1; transform: none; }
+
+  /* Wipe and line keep the observed box intact (IntersectionObserver ignores fully clipped / zero-scale
+     boxes), so the effect is applied to the child / background instead. */
+  [data-reveal="wipe"] { opacity: 1; transform: none; }
+  [data-reveal="wipe"] > * { clip-path: inset(0 0 100% 0); transition: clip-path 1.3s var(--ease-out); transition-delay: calc(var(--i, 0) * 90ms); }
+  [data-reveal="wipe"].is-in > * { clip-path: inset(0 0 0 0); }
+  [data-reveal="line"] {
+    opacity: 1; transform: none;
+    background: linear-gradient(var(--gold-500), var(--gold-500)) right / 0% 100% no-repeat;
+    transition: background-size 1.1s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  [data-reveal="line"].is-in { background-size: 100% 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  [data-reveal] > * { clip-path: none !important; }
+  [data-reveal="line"] { background-size: 100% 100% !important; }
+  .reveal > * { animation: none; }
+}
+
+/* Image inside a wipe reveal settles from a slight zoom */
+[data-reveal="wipe"] img { transition: transform 1.6s var(--ease-out); }
+@media (scripting: enabled) {
+  [data-reveal="wipe"]:not(.is-in) img { transform: scale(1.12); }
+}
+
+@keyframes menu-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* Hero slide progress */
+@keyframes slide-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.slide-progress { transform-origin: right; animation: slide-progress linear both; }
+
+/* Slow gold sheen across headings' accent words / numbers */
+@keyframes sheen { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.text-sheen {
+  background: linear-gradient(100deg, var(--gold-600) 0%, var(--gold-500) 35%, #f0dcb4 50%, var(--gold-500) 65%, var(--gold-600) 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 6s linear infinite;
+}
+
+/* Ambient glow drifting behind light sections */
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-4%, 3%, 0) scale(1.08); }
+}
+.glow-orb {
+  position: absolute; border-radius: 9999px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(233, 205, 150, 0.35), rgba(233, 205, 150, 0));
+  animation: drift 14s ease-in-out infinite;
+}
+
+/* Rotating dashed ring around feature icons */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.ring-spin { animation: spin-slow 18s linear infinite; }
 
 @keyframes kenburns {
   from { transform: scale(1.06); }
@@ -191,89 +268,202 @@ a.bg-gold-gradient:hover, button.bg-gold-gradient:hover:not(:disabled) { backgro
 .prose-lux { color: var(--gray-700); font-size: 1.0625rem; line-height: 1.95; }
 
 /* =========================================================================
-   Branded loader — the hexagon's six triangles switch on like light fixtures
+   Branded loader — "a lamp switching on".
+   The filament flickers, a warm glow swells, the hexagon's six triangles light
+   up in sequence with a soft bloom, then a beam of light sweeps across it.
+   `.seraj-mark` loops (in-page loader); `.seraj-mark.is-once` plays once and
+   stays lit (first-visit splash).
    ========================================================================= */
+/* ---------- Hollow brand mark (SVG, see components/brand/SerajLogo) ---------- */
+.mk { display: block; overflow: visible; }
+.mk-light { --mk-s1: #c9ac82; --mk-s2: #a27a5b; --mk-s3: #86634a; }
+.mk-dark { --mk-s1: #f3e2bf; --mk-s2: #d3bf9a; --mk-s3: #a27a5b; }
+.mk-line { stroke-width: 1.3; stroke-linejoin: round; stroke-dasharray: 1 1; stroke-dashoffset: 0; }
+.mk-fill { opacity: 0; transition: opacity 0.6s var(--ease-out); transition-delay: calc(var(--n) * 70ms); }
+.mk-draw .mk-line { animation: mk-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--n) * 0.1s + 0.15s); }
+@keyframes mk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* Logo lockup: hollow mark + wordmark. Hovering the link switches the six triangles on one after another. */
+.seraj-logo { display: inline-flex; align-items: center; gap: 0.55em; }
+.seraj-logo .mk { height: 100%; width: auto; aspect-ratio: 711 / 662; transition: filter 0.7s var(--ease-out); }
+.seraj-logo-word { height: 100%; width: auto; }
+a:hover > .seraj-logo .mk-fill, .seraj-logo:hover .mk-fill { opacity: 0.95; }
+a:hover > .seraj-logo .mk, .seraj-logo:hover .mk { filter: drop-shadow(0 0 8px rgba(233, 196, 128, 0.6)); }
+
+/* Loader mark: the outline is traced by a thread of light, each triangle switches on like a bulb
+   (with a short flicker), holds, then everything fades and the cycle starts again. */
 .seraj-mark { position: relative; display: inline-block; isolation: isolate; }
 .seraj-mark > span { position: absolute; inset: 0; }
-.seraj-unlit, .seraj-wedge {
-  background: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
+.seraj-mark .mk { position: relative; width: 100%; height: 100%; }
+.seraj-mark .mk-line { animation: seraj-trace 3.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; animation-delay: calc(var(--n) * 0.11s); }
+.seraj-mark .mk-fill { transition: none; animation: seraj-bulb 3.2s linear infinite; animation-delay: calc(var(--n) * 0.11s); }
+.seraj-mark .mk { animation: seraj-bloom 3.2s ease-in-out infinite; }
+@keyframes seraj-trace {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  32%, 78% { stroke-dashoffset: 0; opacity: 1; }
+  92%, 100% { stroke-dashoffset: 0; opacity: 0; }
 }
-.seraj-unlit { opacity: 0.13; filter: grayscale(1); }
-.seraj-wedge {
-  opacity: 0.13;
-  animation: seraj-wedge 2.6s var(--ease-out) infinite;
-  will-change: opacity, filter;
+@keyframes seraj-bulb {
+  0%, 30% { opacity: 0; }
+  33% { opacity: 0.9; } 35% { opacity: 0.2; } 38% { opacity: 0.75; } 40% { opacity: 0.4; }
+  46%, 78% { opacity: 0.95; }
+  92%, 100% { opacity: 0; }
 }
-/* Wedges = hexagon split at its centre (52% 52%), clockwise from the top. */
-.seraj-wedge-0 { clip-path: polygon(52% 52%, 20% -16%, 84% -16%); animation-delay: 0s; }
-.seraj-wedge-1 { clip-path: polygon(52% 52%, 84% -16%, 123% 52%); animation-delay: 0.16s; }
-.seraj-wedge-2 { clip-path: polygon(52% 52%, 123% 52%, 84% 119%); animation-delay: 0.32s; }
-.seraj-wedge-3 { clip-path: polygon(52% 52%, 84% 119%, 20% 119%); animation-delay: 0.48s; }
-.seraj-wedge-4 { clip-path: polygon(52% 52%, 20% 119%, -19% 52%); animation-delay: 0.64s; }
-.seraj-wedge-5 { clip-path: polygon(52% 52%, -19% 52%, 20% -16%); animation-delay: 0.8s; }
-@keyframes seraj-wedge {
-  0%, 6% { opacity: 0.13; filter: brightness(0.95) saturate(0.6); }
-  18% { opacity: 1; filter: brightness(1.3) saturate(1.15) drop-shadow(0 0 10px rgba(226, 190, 130, 0.85)); }
-  32%, 62% { opacity: 1; filter: brightness(1.08) saturate(1) drop-shadow(0 0 4px rgba(211, 191, 154, 0.55)); }
-  84%, 100% { opacity: 0.13; filter: brightness(0.95) saturate(0.6); }
+@keyframes seraj-bloom {
+  0%, 36% { filter: none; }
+  52%, 76% { filter: drop-shadow(0 0 10px rgba(240, 200, 130, 0.75)) drop-shadow(0 0 26px rgba(240, 200, 130, 0.3)); }
+  95%, 100% { filter: none; }
 }
+
+/* Warm glow behind the mark */
 .seraj-halo {
-  inset: -45% !important;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(233, 205, 150, 0.55), rgba(211, 191, 154, 0.18) 55%, transparent 75%);
-  animation: seraj-halo 2.6s ease-in-out infinite;
+  inset: -70% !important; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 222, 165, 0.7), rgba(233, 196, 128, 0.26) 45%, rgba(233, 196, 128, 0.07) 65%, transparent 78%);
+  animation: seraj-halo 3.2s ease-in-out infinite;
 }
 @keyframes seraj-halo {
-  0%, 100% { opacity: 0.25; transform: scale(0.82); }
-  45% { opacity: 1; transform: scale(1.06); }
+  0%, 30% { opacity: 0; transform: scale(0.6); }
+  34% { opacity: 0.5; } 37% { opacity: 0.15; }
+  52% { opacity: 1; transform: scale(1.05); }
+  78% { opacity: 0.85; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.7); }
 }
-.seraj-beam {
-  -webkit-mask: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
-  mask: url("/brand/seraj-icon-loader.webp") center / contain no-repeat;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 246, 225, 0.95) 50%, transparent 62%) 0 0 / 260% 100% no-repeat;
-  mix-blend-mode: screen;
-  animation: seraj-beam 2.6s ease-in-out infinite;
+/* Light rays: a faint star of light behind the mark */
+.seraj-rays {
+  inset: -110% !important; z-index: -2; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(240, 210, 150, 0.16) 0deg 3deg, transparent 3deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 70%);
+  mask: radial-gradient(closest-side, #000 20%, transparent 70%);
+  animation: seraj-rays 3.2s ease-in-out infinite;
 }
-@keyframes seraj-beam {
-  0%, 35% { background-position: 130% 0; }
-  70%, 100% { background-position: -30% 0; }
+@keyframes seraj-rays {
+  0%, 38% { opacity: 0; transform: rotate(-12deg) scale(0.85); }
+  60% { opacity: 1; transform: rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: rotate(12deg) scale(1.05); }
 }
+
+/* Play-once variant (splash): trace → switch on → stay lit with a breathing glow and slowly turning rays. */
+.seraj-mark.is-once .mk-line { animation: mk-draw 0.7s cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--n) * 0.07s); }
+.seraj-mark.is-once .mk-fill { animation: seraj-bulb-on 0.5s linear both; animation-delay: calc(var(--n) * 0.06s + 0.6s); }
+@keyframes seraj-bulb-on { 0% { opacity: 0; } 20% { opacity: 0.9; } 30% { opacity: 0.2; } 45% { opacity: 0.8; } 55% { opacity: 0.45; } 100% { opacity: 0.95; } }
+.seraj-mark.is-once .mk { animation: seraj-bloom-on 0.7s ease-out 0.85s both; }
+@keyframes seraj-bloom-on { from { filter: none; } to { filter: drop-shadow(0 0 10px rgba(240, 200, 130, 0.7)) drop-shadow(0 0 24px rgba(240, 200, 130, 0.25)); } }
+.seraj-mark.is-once .seraj-halo { animation: seraj-halo-on 0.8s ease-out 0.6s both, seraj-breathe 3s ease-in-out 1.4s infinite; }
+@keyframes seraj-halo-on {
+  0% { opacity: 0; transform: scale(0.5); }
+  15% { opacity: 0.5; } 25% { opacity: 0.12; }
+  40% { opacity: 0.7; transform: scale(0.75); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes seraj-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.95); } }
+.seraj-mark.is-once .seraj-rays { animation: seraj-rays-on 1.2s ease-out 0.75s both, spin-slow 40s linear 1.95s infinite; }
+@keyframes seraj-rays-on { from { opacity: 0; transform: scale(0.7) rotate(-20deg); } to { opacity: 1; transform: none; } }
+
+/* Glowing filament line under the in-page loader */
 .seraj-track {
-  position: relative; display: block; width: 132px; height: 2px; overflow: hidden;
-  border-radius: 2px; background: var(--gold-100);
+  position: relative; display: block; width: 120px; height: 1px; overflow: hidden;
+  background: linear-gradient(90deg, transparent, var(--gold-200), transparent);
 }
 .seraj-track::after {
-  content: ""; position: absolute; inset-block: 0; width: 42%;
-  background: linear-gradient(90deg, transparent, var(--gold-500), #f3dcae, var(--gold-500), transparent);
-  box-shadow: 0 0 8px rgba(211, 191, 154, 0.9);
-  animation: seraj-track 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  content: ""; position: absolute; inset-block: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, #f3dcae, #fff6e2, #f3dcae, transparent);
+  box-shadow: 0 0 10px 1px rgba(240, 205, 140, 0.9);
+  animation: seraj-track 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
-@keyframes seraj-track { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
+@keyframes seraj-track { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
 
 /* First-visit splash */
 #seraj-splash {
   position: fixed; inset: 0; z-index: 9999;
   display: grid; place-items: center;
-  background: radial-gradient(120% 80% at 50% 42%, #fffdf9 0%, #fbf8f3 55%, #f5eee3 100%);
-  transition: opacity 0.6s var(--ease-out), visibility 0.6s;
+  background: radial-gradient(120% 80% at 50% 42%, #fffdf9 0%, #fbf8f3 55%, #f3ebdd 100%);
+  transition: opacity 0.7s var(--ease-out), visibility 0.7s;
 }
-.seraj-splash-inner { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+/* The room itself warms up as the lamp comes on */
+#seraj-splash::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 45% at 50% 40%, rgba(255, 226, 170, 0.45), transparent 70%);
+  animation: fadein 1.2s ease-out 0.25s both;
+}
+.seraj-splash-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; transition: transform 0.7s var(--ease-out), filter 0.7s var(--ease-out); }
+/* Wordmark is revealed by a band of light travelling across it */
 .seraj-wordmark {
   display: block; width: 190px; height: 74px;
   background: url("/brand/seraj-wordmark-loader.webp") center / contain no-repeat;
-  animation: rise 0.9s var(--ease-out) 0.25s both;
+  -webkit-mask: linear-gradient(100deg, #000 40%, rgba(0, 0, 0, 0.15) 50%, transparent 60%) 100% 0 / 300% 100% no-repeat;
+  mask: linear-gradient(100deg, #000 40%, rgba(0, 0, 0, 0.15) 50%, transparent 60%) 100% 0 / 300% 100% no-repeat;
+  animation: seraj-word-reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.7s both;
 }
+@keyframes seraj-word-reveal {
+  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; opacity: 0.2; transform: translateY(6px); }
+  to { -webkit-mask-position: 0% 0; mask-position: 0% 0; opacity: 1; transform: none; }
+}
+.seraj-tagline {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 12px; letter-spacing: 0.22em; color: var(--gold-600); white-space: nowrap;
+  animation: rise 0.6s var(--ease-out) 1s both;
+}
+.seraj-tagline::before, .seraj-tagline::after { content: ""; width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-300)); }
+.seraj-tagline::after { transform: scaleX(-1); }
+/* Exit: the light flares, the mark lifts and softly blurs away */
 html[data-splash="out"] #seraj-splash { opacity: 0; visibility: hidden; }
-html[data-splash="out"] .seraj-splash-inner { transform: scale(1.04); transition: transform 0.6s var(--ease-out); }
+html[data-splash="out"] .seraj-splash-inner { transform: scale(1.06) translateY(-6px); filter: blur(4px) brightness(1.15); }
 html[data-splash="off"] #seraj-splash { display: none; }
 /* Failsafe: never let the splash linger, even if scripts are blocked. */
-#seraj-splash { animation: seraj-splash-failsafe 0.6s ease 4s forwards; }
+#seraj-splash { animation: seraj-splash-failsafe 0.6s ease 3.4s forwards; }
 @keyframes seraj-splash-failsafe { to { opacity: 0; visibility: hidden; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .seraj-wedge { animation: none !important; opacity: 1; filter: none; }
-  .seraj-halo, .seraj-beam, .seraj-track::after { animation: none !important; }
+  .seraj-mark .mk-line, .seraj-mark .mk-fill, .seraj-mark .mk, .mk-draw .mk-line { animation: none !important; }
+  .seraj-mark .mk-fill { opacity: 0.9; }
+  .seraj-halo, .seraj-rays, .seraj-track::after, .seraj-wordmark, .seraj-tagline, #seraj-splash::before { animation: none !important; }
+  .seraj-wordmark { -webkit-mask: none; mask: none; }
+  .seraj-halo { opacity: 0.6; }
+}
+
+/* Small warm "bulb" that glows softly — marks the lighting tagline */
+.lamp-dot { position: relative; flex: none; width: 7px; height: 7px; border-radius: 9999px; background: radial-gradient(circle at 40% 35%, #fff7e4, #f0cf8f 55%, #c9a06a); box-shadow: 0 0 6px 2px rgba(240, 205, 140, 0.7); animation: lamp-glow 3.2s ease-in-out infinite; }
+@keyframes lamp-glow { 0%, 100% { box-shadow: 0 0 5px 1px rgba(240, 205, 140, 0.55); } 50% { box-shadow: 0 0 12px 4px rgba(255, 214, 150, 0.85); } }
+@media (prefers-reduced-motion: reduce) { .lamp-dot { animation: none; } }
+
+/* =========================================================================
+   Light divider — a gold hairline fading out from a small glowing hexagon,
+   with a soft beam of light travelling along each side towards the centre.
+   ========================================================================= */
+.light-divider { direction: ltr; display: flex; align-items: center; gap: 14px; width: 100%; pointer-events: none; }
+.light-divider .ld-line { position: relative; flex: 1; height: 1px; overflow: hidden; }
+.light-divider .ld-line:first-child { background: linear-gradient(90deg, transparent, var(--gold-200) 35%, var(--gold-500)); }
+.light-divider .ld-line:last-child { background: linear-gradient(270deg, transparent, var(--gold-200) 35%, var(--gold-500)); }
+.light-divider .ld-line::after {
+  content: ""; position: absolute; inset-block: -1px; width: 22%;
+  background: linear-gradient(90deg, transparent, rgba(255, 238, 200, 0.95), transparent);
+  box-shadow: 0 0 10px 2px rgba(240, 205, 140, 0.55);
+  animation: ld-sweep 4.5s cubic-bezier(0.5, 0, 0.3, 1) infinite;
+}
+.light-divider .ld-line:last-child::after { animation-name: ld-sweep-rev; }
+@keyframes ld-sweep { 0% { left: -25%; opacity: 0; } 15% { opacity: 1; } 55%, 100% { left: 100%; opacity: 0; } }
+@keyframes ld-sweep-rev { 0% { right: -25%; opacity: 0; } 15% { opacity: 1; } 55%, 100% { right: 100%; opacity: 0; } }
+.light-divider .ld-mark { position: relative; flex: none; width: 20px; height: 19px; }
+.light-divider .ld-mark::before {
+  content: ""; position: absolute; inset: -160%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 220, 160, 0.5), transparent);
+  animation: ld-halo 4.5s ease-in-out infinite;
+}
+.light-divider .ld-mark::after {
+  content: ""; position: absolute; inset: 0;
+  background: url("/brand/seraj-icon-outline.svg") center / contain no-repeat;
+  animation: ld-glow 4.5s ease-in-out infinite;
+}
+@keyframes ld-halo { 0%, 35%, 100% { opacity: 0.45; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.1); } }
+/* the mark brightens the moment the two beams meet it */
+@keyframes ld-glow {
+  0%, 35%, 100% { opacity: 0.75; filter: drop-shadow(0 0 3px rgba(233, 196, 128, 0.5)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 214, 150, 1)) brightness(1.15); }
+}
+.light-divider.is-dark .ld-line:first-child { background: linear-gradient(90deg, transparent, rgba(211, 191, 154, 0.35) 35%, var(--gold-300)); }
+.light-divider.is-dark .ld-line:last-child { background: linear-gradient(270deg, transparent, rgba(211, 191, 154, 0.35) 35%, var(--gold-300)); }
+@media (prefers-reduced-motion: reduce) {
+  .light-divider .ld-line::after { display: none; }
+  .light-divider .ld-mark::before, .light-divider .ld-mark::after { animation: none; }
 }
 
 /* Mobile bottom-sheet dialogs */

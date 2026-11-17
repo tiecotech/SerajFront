@@ -69,7 +69,15 @@ export function HeroSlider({ slides, intervalMs = 6000, autoplay = true, height 
         <>
           <div className="absolute bottom-7 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
             {slides.map((s, i) => (
-              <button key={s.id} onClick={() => go(i)} aria-label={`الشريحة ${i + 1}`} className={cn("h-1.5 rounded-full transition-all duration-500 cursor-pointer", i === index ? "w-10 bg-gold-300" : "w-4 bg-white/50 hover:bg-white/80")} />
+              <button key={s.id} onClick={() => go(i)} aria-label={`الشريحة ${i + 1}`} aria-current={i === index} className={cn("relative h-1.5 overflow-hidden rounded-full transition-all duration-500 cursor-pointer", i === index ? "w-14 bg-white/35" : "w-4 bg-white/50 hover:bg-white/80")}>
+                {i === index && (
+                  <span
+                    key={index}
+                    className="slide-progress absolute inset-0 rounded-full bg-gold-300"
+                    style={{ animationDuration: `${intervalMs}ms`, animationPlayState: paused || !autoplay ? "paused" : "running" }}
+                  />
+                )}
+              </button>
             ))}
           </div>
           <div className="absolute bottom-5 end-6 z-20 hidden md:flex gap-2">

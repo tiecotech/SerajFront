@@ -8,7 +8,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const b = await getBrand((await params).slug);
-  return b ? { title: `${b.name} | السراج المضيء`, description: b.description || undefined } : {};
+  return b ? { title: `${b.name} | السراج المضيء للإضاءة`, description: b.description || undefined } : {};
 }
 
 export default async function BrandPage({ params }: Props) {

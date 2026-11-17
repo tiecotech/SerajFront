@@ -8,7 +8,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await getProject((await params).slug);
-  return p ? { title: `${p.title} | مشاريع السراج المضيء`, description: p.summary || undefined, openGraph: p.cover ? { images: [p.cover.lg] } : undefined } : {};
+  return p ? { title: `${p.title} | مشاريع إضاءة — السراج المضيء`, description: p.summary || undefined, openGraph: p.cover ? { images: [p.cover.lg] } : undefined } : {};
 }
 
 export default async function ProjectPage({ params }: Props) {

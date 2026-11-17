@@ -1,16 +1,18 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import type { SiteCompany } from "@/lib/types";
+import { LightDivider } from "./LightDivider";
 import { SocialLinks } from "./SocialLinks";
+import { SerajLogo } from "@/components/brand/SerajLogo";
 
 export function SiteFooter({ company, menu, footerText }: { company: SiteCompany; menu: { slug: string; title: string }[]; footerText?: string | null }) {
   return (
-    <footer className="mt-0 border-t border-gray-100 bg-gray-25">
-      <div className="pattern-band h-10 opacity-70" aria-hidden />
+    <footer className="mt-0 bg-gray-25">
+      <div className="container-lux pt-10"><LightDivider /></div>
       <div className="container-lux grid gap-10 py-14 md:grid-cols-12">
         <div className="md:col-span-5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal.png" alt={company.name} className="h-14 w-auto" />
+          <SerajLogo id="ftr" className="h-14" />
+          <div className="mt-3 flex items-center gap-2 text-[12px] tracking-[0.18em] text-gold-600"><span className="lamp-dot" aria-hidden />أنظمة الإضاءة والإنارة · LIGHTING SYSTEMS</div>
           <p className="mt-5 max-w-sm text-[14px] leading-7 text-gray-500">{company.description || footerText}</p>
           <SocialLinks social={company.social} className="mt-6" />
         </div>

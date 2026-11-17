@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { SerajLogo } from "@/components/brand/SerajLogo";
 
 export function SiteHeader({ menu, announcement, previewBase = "" }: { menu: { slug: string; title: string }[]; announcement?: string | null; previewBase?: string }) {
   const [open, setOpen] = useState(false);
@@ -26,9 +27,15 @@ export function SiteHeader({ menu, announcement, previewBase = "" }: { menu: { s
     <header className={cn("sticky top-0 z-40 bg-white/95 backdrop-blur transition-shadow", scrolled ? "shadow-sm" : "")}>
       {announcement && <div className="bg-gold-50 py-1.5 text-center text-[13px] text-gold-700">{announcement}</div>}
       <div className="container-lux flex h-16 md:h-[76px] items-center justify-between gap-6">
-        <Link href={previewBase || "/"} className="shrink-0" aria-label="السراج المضيء">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/seraj-horizontal.png" alt="السراج المضيء — AlSeraj Almuodea" className="h-10 md:h-12 w-auto" />
+        <Link href={previewBase || "/"} className="flex shrink-0 items-center gap-4" aria-label="السراج المضيء — أنظمة الإضاءة">
+          <SerajLogo id="hdr" draw priority className="h-10 md:h-12" />
+          <span className="hidden md:flex items-center gap-2 border-s border-gold-200 ps-4 text-[12px] leading-tight text-gold-600">
+            <span className="lamp-dot" aria-hidden />
+            <span>
+              <span className="block font-medium text-brand-green">أنظمة الإضاءة</span>
+              <span className="block text-[10px] tracking-[0.2em] text-gold-500" dir="ltr">LIGHTING SYSTEMS</span>
+            </span>
+          </span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1" aria-label="القائمة الرئيسية">
@@ -39,12 +46,12 @@ export function SiteHeader({ menu, announcement, previewBase = "" }: { menu: { s
                 key={l.slug}
                 href={href(l.slug)}
                 className={cn(
-                  "relative px-3.5 py-2 text-[15px] transition-colors",
+                  "group relative px-3.5 py-2 text-[15px] transition-colors",
                   active ? "text-brand-green font-medium" : "text-gray-500 hover:text-brand-green",
                 )}
               >
                 {l.title}
-                <span className={cn("absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded bg-gold-gradient transition-opacity", active ? "opacity-100" : "opacity-0")} />
+                <span className={cn("absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded bg-gold-500 transition-transform duration-500 ease-lux", active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100")} />
               </Link>
             );
           })}
@@ -61,10 +68,10 @@ export function SiteHeader({ menu, announcement, previewBase = "" }: { menu: { s
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-gray-100 bg-white">
+        <div className="lg:hidden border-t border-gray-100 bg-white animate-[menu-in_.35s_var(--ease-out)_both]">
           <nav className="container-lux flex flex-col py-3">
-            {links.map((l) => (
-              <Link key={l.slug} href={href(l.slug)} className="rounded-[3px] px-3 py-3 text-[15px] text-brand-green hover:bg-gold-50">
+            {links.map((l, i) => (
+              <Link key={l.slug} href={href(l.slug)} style={{ animationDelay: `${60 + i * 45}ms` }} className="rounded-[3px] px-3 py-3 text-[15px] text-brand-green hover:bg-gold-50 animate-[rise_.45s_var(--ease-out)_both]">
                 {l.title}
               </Link>
             ))}
