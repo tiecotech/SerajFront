@@ -75,13 +75,35 @@ export const SHOWROOM_CSS = `
 .sr-hair::after { content: ""; position: absolute; inset: 0; width: 18%; background: linear-gradient(90deg, transparent, #f3dcae, transparent); animation: sr-glint 5s ease-in-out infinite; }
 @keyframes sr-glint { from { transform: translateX(-120%); } to { transform: translateX(650%); } }
 
-/* cards: second photo fades in on hover, the frame warms up */
-.sr-card .sr-alt { opacity: 0; transition: opacity .9s cubic-bezier(.22,1,.36,1), transform 1.4s cubic-bezier(.22,1,.36,1); }
-.sr-card:hover .sr-alt { opacity: 1; }
-.sr-card .sr-ph { transition: transform 1.4s cubic-bezier(.22,1,.36,1); }
-.sr-card:hover .sr-ph { transform: scale(1.06); }
-.sr-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(184,149,111,0); transition: box-shadow .6s; }
-.sr-card:hover::after { box-shadow: inset 0 0 0 1px rgba(184,149,111,.55); }
+/* hexagon cards — the frame follows the AlSeraj mark (a flat-top hexagon) */
+@property --sr-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.sr-hex { clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.sr-hexwrap { position: relative; aspect-ratio: 1.1547; filter: drop-shadow(0 14px 18px rgba(44,57,48,.09)); transition: filter .7s, transform .7s cubic-bezier(.22,1,.36,1); }
+.sr-card:hover .sr-hexwrap { filter: drop-shadow(0 26px 30px rgba(134,99,74,.24)); transform: translateY(-6px); }
+.sr-rim { position: absolute; inset: 0; background: conic-gradient(from var(--sr-a), #efe1c3, #b8956f 25%, #e8d3a8 45%, #86634a 70%, #efe1c3); transition: --sr-a 1.6s cubic-bezier(.22,1,.36,1); }
+.sr-card:hover .sr-rim { --sr-a: 300deg; }
+.sr-face { position: absolute; inset: 2px; overflow: hidden; background: #fff; display: block; }
+.sr-face .sr-ph { transition: transform 1.4s cubic-bezier(.22,1,.36,1); }
+.sr-card:hover .sr-face .sr-ph { transform: scale(1.07); }
+.sr-face .sr-alt { opacity: 0; transition: opacity .9s cubic-bezier(.22,1,.36,1); }
+.sr-card:hover .sr-face .sr-alt { opacity: 1; }
+/* warm light falling from the top edge, like a lamp switching on */
+.sr-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: multiply; background: radial-gradient(55% 60% at 50% -8%, rgba(240,201,138,.55), transparent 72%); transition: opacity .8s; }
+.sr-card:hover .sr-glow { opacity: 1; }
+.sr-hexbtn { position: absolute; left: 50%; bottom: 0; translate: -50% 42%; z-index: 2; display: flex; align-items: center; justify-content: center; width: 46px; aspect-ratio: 1.1547; color: #f3e2bf; background: #2c3930; cursor: pointer; transition: background .35s, color .35s, scale .35s cubic-bezier(.34,1.56,.64,1); }
+.sr-hexbtn:hover:not(:disabled) { background: linear-gradient(135deg,#f3e2bf,#b8956f); color: #2c3930; scale: 1.1; }
+.sr-hexbtn:active:not(:disabled) { scale: .94; }
+.sr-hexbtn:disabled { opacity: .4; cursor: not-allowed; }
+.sr-hexbtn.is-in { background: linear-gradient(135deg,#f3e2bf,#b8956f); color: #2c3930; }
+@media (min-width: 640px) { .sr-hexbtn { width: 46px; } }
+/* honeycomb rhythm: every other column sits half a step lower (the 2, 4 and 6 column layouts) */
+.sr-honey > *:nth-child(even) { margin-top: 2.25rem; }
+@media (min-width: 640px) and (max-width: 767px) { .sr-honey > *:nth-child(even) { margin-top: 0; } }
+@media (min-width: 768px) { .sr-honey > *:nth-child(even) { margin-top: 3rem; } }
+@media (min-width: 1024px) { .sr-honey > *:nth-child(even) { margin-top: 2.75rem; } }
+/* "loading more" — three hexagons breathing in turn */
+.sr-dotload { display: block; animation: sr-dotload 1s ease-in-out infinite; }
+@keyframes sr-dotload { 0%, 100% { opacity: .25; transform: scale(.75); } 50% { opacity: 1; transform: none; } }
 
 /* product view */
 .sr-view { animation: sr-view .55s cubic-bezier(.22,1,.36,1) both; }

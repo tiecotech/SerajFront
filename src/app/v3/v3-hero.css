@@ -1,0 +1,101 @@
+/* =========================================================================
+   /v3 — hero: the hexagon assembles and lights up like a cluster of bulbs,
+   the wordmark resolves out of a blur, then on scroll the hexagon rises to
+   become the ceiling rose the lamp hangs from. Imported last.
+   ========================================================================= */
+
+/* the shared first-visit splash would play a second logo animation */
+html:has(.v3) #seraj-splash { display: none !important; }
+
+/* Lenis smooth scrolling */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+[data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* the footer belongs to the end of the tour */
+.v3-foot { display: none; }
+html.v3-show-foot .v3-foot { display: block; }
+
+.v3-scroll { height: 340svh; }
+.v3-stage {
+  --mark-h: clamp(112px, 11.5vw, 168px);
+  --mark-y0: 35svh;
+  --mark-s: 0.36;
+  --logo-y: 11svh;
+  --cord-top: calc(var(--logo-y) + var(--mark-h) * var(--mark-s) * 0.5 - 3px);
+}
+@media (max-width: 767px) {
+  .v3-stage { --mark-h: 96px; --mark-y0: 32svh; --mark-s: 0.5; --logo-y: 9svh; }
+}
+
+/* ------------------------------- the mark ------------------------------- */
+.v3-mark {
+  position: absolute; z-index: 3; left: 50%; top: var(--mark-y0); height: var(--mark-h); aspect-ratio: 711 / 662;
+  transform: translate(-50%, -50%) translateY(calc(var(--logo) * (var(--logo-y) - var(--mark-y0)))) scale(calc(1 - var(--logo) * (1 - var(--mark-s))));
+  will-change: transform;
+}
+.v3-mark .mk { position: relative; display: block; width: 100%; height: 100%; overflow: visible; transition: filter 0.8s var(--ease); }
+.v3-mark .mk-line { stroke-width: 1.3; }
+.v3-mark .mk-tri { transform-box: fill-box; transform-origin: center; animation: v3-tri 1.3s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(0.25s + var(--n) * 0.075s); }
+.v3-mark .mk-tri:nth-child(6n + 2) { --tx: 0px; --ty: -260px; }
+.v3-mark .mk-tri:nth-child(6n + 3) { --tx: 230px; --ty: -120px; }
+.v3-mark .mk-tri:nth-child(6n + 4) { --tx: 230px; --ty: 140px; }
+.v3-mark .mk-tri:nth-child(6n + 5) { --tx: 0px; --ty: 260px; }
+.v3-mark .mk-tri:nth-child(6n + 6) { --tx: -230px; --ty: 140px; }
+.v3-mark .mk-tri:nth-child(6n + 7) { --tx: -230px; --ty: -120px; }
+@keyframes v3-tri {
+  from { opacity: 0; transform: translate(var(--tx, 0px), var(--ty, -200px)) scale(0.25) rotate(-75deg); }
+  55% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+/* each triangle switches on like a bulb: on, a flicker, then a steady glow */
+.v3-mark .mk-fill { opacity: 0; transition: none; animation: v3-tri-fill 1.1s linear both; animation-delay: calc(1.35s + var(--n) * 0.11s); }
+@keyframes v3-tri-fill { 0% { opacity: 0; } 18% { opacity: 1; } 30% { opacity: 0.35; } 46% { opacity: 1; } 100% { opacity: 0.92; } }
+.v3-mark-bloom {
+  position: absolute; left: 50%; top: 50%; width: 260%; height: 260%; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 196, 110, 0.42) 0%, rgba(255, 210, 150, 0.14) 32%, transparent 62%);
+  opacity: 0; animation: v3-bloom 2.6s var(--ease) 1.5s both;
+}
+@keyframes v3-bloom { from { opacity: 0; scale: 0.55; } 35% { opacity: 1; } to { opacity: 0.3; scale: 1; } }
+.v3-stage.is-on .v3-mark .mk { filter: drop-shadow(0 0 14px rgba(255, 170, 60, 0.6)); }
+
+/* ------------------------------ wordmark + tagline ------------------------------ */
+.v3-intro {
+  top: calc(var(--mark-y0) + var(--mark-h) / 2 + 30px);
+  opacity: calc(1 - var(--logo) * 2.2);
+  filter: blur(calc(var(--logo) * 16px));
+  transform: translateY(calc(var(--logo) * -70px));
+}
+.v3-wordmark { position: relative; margin: 0; animation: v3-wm 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both; }
+.v3-wordmark img {
+  display: block; width: clamp(220px, 22vw, 330px); height: auto;
+  /* a band of light passes over the letters once */
+  -webkit-mask-image: linear-gradient(100deg, #000 35%, rgba(0, 0, 0, 0.35) 50%, #000 65%);
+  mask-image: linear-gradient(100deg, #000 35%, rgba(0, 0, 0, 0.35) 50%, #000 65%);
+  -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
+  -webkit-mask-position: 100% 0; mask-position: 100% 0;
+  animation: v3-sheen 1.8s var(--ease-io) 1.9s both;
+}
+@keyframes v3-wm { from { opacity: 0; filter: blur(16px); transform: translateY(18px) scale(0.97); } }
+@keyframes v3-sheen { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0% 0; mask-position: 0% 0; } }
+.v3-intro .v3-tagline { margin-top: 22px; animation: none; }
+.v3-intro .v3-hint { margin-top: 28px; }
+@media (max-width: 767px) {
+  .v3-wordmark img { width: 200px; }
+  .v3-intro .v3-tagline { font-size: 19px; padding: 0 12px; }
+}
+
+/* ------------------------------ docked brand ------------------------------ */
+.v3-brandbar {
+  position: absolute; z-index: 6; top: 18px; right: 26px; pointer-events: none;
+  opacity: clamp(0, calc((var(--logo) - 0.7) * 3.4), 1);
+  transform: translateY(calc((1 - var(--logo)) * -10px));
+}
+.v3-brandbar img { display: block; height: 32px; width: auto; }
+@media (max-width: 767px) { .v3-brandbar { top: 20px; right: 16px; } .v3-brandbar img { height: 24px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-mark .mk-tri, .v3-mark .mk-fill, .v3-mark-bloom, .v3-wordmark, .v3-wordmark img { animation: none !important; }
+  .v3-mark .mk-fill { opacity: 0.92; }
+}

@@ -4,7 +4,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity, Bell, ChevronDown, ClipboardList, FileText, FolderTree, Globe, Images, LayoutDashboard, LayoutGrid,
-  LogOut, Menu, Package, Presentation, ScanSearch, Settings, ShoppingBag, Tags, Users, Warehouse, X, BarChart3, ExternalLink,
+  LogOut, Menu, Package, Presentation, ScanSearch, Settings, ShoppingBag, Tags, Users, Warehouse, X, BarChart3, ExternalLink, Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,10 +17,10 @@ import type { Cart, User } from "@/lib/types";
 import { cn, relative } from "@/lib/utils";
 import { SerajLogo } from "@/components/brand/SerajLogo";
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean; badge?: number };
 type NavGroup = { title?: string; items: NavItem[] };
 
-function navFor(user: User): NavGroup[] {
+function navFor(user: User, unreadMessages = 0): NavGroup[] {
   if (user.role === "warehouse") {
     return [{ items: [{ href: "/app/warehouse", label: "طلبات المستودع", icon: Warehouse }] }];
   }
@@ -57,6 +57,7 @@ function navFor(user: User): NavGroup[] {
       { href: "/app/warehouse", label: "طلبات المستودع", icon: Warehouse },
     ] },
     { title: "الموقع", items: [
+      { href: "/app/admin/messages", label: "رسائل التواصل", icon: Mail, badge: unreadMessages },
       { href: "/app/admin/website", label: "إدارة واجهة الموقع", icon: Globe },
       { href: "/app/admin/media", label: "مكتبة الوسائط", icon: Images },
       { href: "/app/admin/settings", label: "الإعدادات", icon: Settings },
@@ -74,10 +75,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (me.isFetched && !me.data) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
   }, [me.isFetched, me.data, router, pathname]);
   useEffect(() => setOpen(false), [pathname]);
+  // unread contact-form messages from the public website (admin sidebar badge)
+  const messages = useQuery({
+    queryKey: ["admin-messages-counts"],
+    queryFn: async () => (await get<{ data: { total: number; unread: number } }>("/admin/messages/counts")).data,
+    enabled: me.data?.role === "admin",
+    refetchInterval: 60_000,
+  });
 
   if (!me.data) return <div className="min-h-screen"><PageLoader /></div>;
   const user = me.data;
-  const groups = navFor(user);
+  const groups = navFor(user, messages.data?.unread ?? 0);
 
   const sidebar = (
     <aside className="flex h-full flex-col bg-white">
@@ -106,6 +114,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       {active && <span className="absolute inset-y-2 start-0 w-[3px] rounded-full bg-gold-gradient" />}
                       <it.icon className={cn("h-[18px] w-[18px]", active ? "text-gold-600" : "text-gray-400 group-hover:text-gold-500")} />
                       {it.label}
+                      {!!it.badge && <span className="ms-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-700 px-1.5 text-[11px] font-semibold text-white tabular">{it.badge > 99 ? "99+" : it.badge}</span>}
                     </Link>
                   </li>
                 );

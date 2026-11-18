@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { GalleryField, SortableList } from "@/components/app/media";
+import { RelatedProductsField } from "@/components/app/RelatedProductsField";
 import { Button, Card, ErrorState, Field, Input, PageHeader, PageLoader, Select, Switch, Textarea } from "@/components/ui";
 import { ApiError, errorMessage, get, post, put } from "@/lib/api";
 import type { Brand, Category, Media, Product } from "@/lib/types";
@@ -13,7 +14,7 @@ import type { Brand, Category, Media, Product } from "@/lib/types";
 type Spec = { id: number; group: string; label: string; value: string };
 type Form = {
   sku: string; name: string; name_en: string; short_description: string; description: string; brand_id: string; category_id: string;
-  price: string; unit: string; availability: string; is_active: boolean; is_featured: boolean; images: Media[]; specs: Spec[];
+  price: string; unit: string; availability: string; is_active: boolean; is_featured: boolean; images: Media[]; specs: Spec[]; related: Product[];
 };
 
 const SPEC_TEMPLATE: [string, string][] = [
@@ -21,7 +22,7 @@ const SPEC_TEMPLATE: [string, string][] = [
   ["ميكانيكية", "الأبعاد"], ["ميكانيكية", "درجة الحماية"], ["ميكانيكية", "الخامة"], ["ميكانيكية", "اللون"], ["عام", "الضمان"],
 ];
 let tmpId = 1;
-const empty: Form = { sku: "", name: "", name_en: "", short_description: "", description: "", brand_id: "", category_id: "", price: "", unit: "قطعة", availability: "available", is_active: true, is_featured: false, images: [], specs: [] };
+const empty: Form = { sku: "", name: "", name_en: "", short_description: "", description: "", brand_id: "", category_id: "", price: "", unit: "قطعة", availability: "available", is_active: true, is_featured: false, images: [], specs: [], related: [] };
 
 export default function ProductEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -42,6 +43,7 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
       brand_id: String(p.brand?.id ?? ""), category_id: String(p.category?.id ?? ""), price: p.price, unit: p.unit, availability: p.availability,
       is_active: p.is_active, is_featured: p.is_featured, images: p.images?.map((i) => i.image) ?? [],
       specs: (p.specifications ?? []).map((s) => ({ id: tmpId++, group: s.group ?? "", label: s.label, value: s.value })),
+      related: p.related ?? [],
     });
   }, [product.data]);
 
@@ -53,6 +55,7 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
         price: form.price, unit: form.unit, availability: form.availability, is_active: form.is_active, is_featured: form.is_featured,
         image_ids: form.images.map((m) => m.id),
         specifications: form.specs.filter((s) => s.label.trim() && s.value.trim()).map((s) => ({ group: s.group || null, label: s.label, value: s.value })),
+        related_ids: form.related.map((r) => r.id),
       };
       return isNew ? post<{ data: Product }>("/admin/products", body) : put<{ data: Product }>(`/admin/products/${id}`, body);
     },
@@ -116,6 +119,13 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
                 </div>
               )} />
             )}
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="mb-1 text-[15px] font-semibold text-brand-green">منتجات ذات صلة</h2>
+            <p className="mb-4 text-[12px] text-gray-500">اختر المنتجات التي تظهر في قسم «منتجات ذات صلة» بصفحة هذا المنتج — اسحب لإعادة الترتيب، والأول يظهر أولاً.</p>
+            <RelatedProductsField value={form.related} onChange={(v) => s("related", v)} excludeId={isNew ? undefined : Number(id)} />
+            {errors.related_ids && <p className="mt-2 text-[12px] text-danger">{errors.related_ids}</p>}
           </Card>
         </div>
 

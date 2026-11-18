@@ -100,6 +100,8 @@ export type Product = {
   image: Media | null;
   images?: { id: number; media_id: number; is_primary: boolean; image: Media }[];
   specifications?: Spec[];
+  /** Hand-picked related products (admin product form only). */
+  related?: Product[];
   stock_quantity?: number | null;
   deleted_at?: string | null;
 };

@@ -117,7 +117,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
           <h2 className="text-[20px] font-semibold text-brand-green">منتجات ذات صلة</h2>
           <span className="gold-rule mt-2 mb-6" />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {related.data.slice(0, 4).map((r) => <ProductCard key={r.id} p={r} canBuy={canBuy} currency={currency} />)}
+            {related.data.slice(0, 8).map((r) => <ProductCard key={r.id} p={r} canBuy={canBuy} currency={currency} />)}
           </div>
         </section>
       )}

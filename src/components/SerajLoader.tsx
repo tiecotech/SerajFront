@@ -35,7 +35,7 @@ export function SerajLoader({ label = "جارِ تحميل السراج المض
  * page has loaded (min ~1.75s so the trace and switch-on read, max 2.3s so it never blocks).
  * Hidden via an attribute on <html> — React never touches it, so no hydration issues.
  */
-const SPLASH_SCRIPT = `(function(){var d=document.documentElement,k='seraj-splash';try{if(sessionStorage.getItem(k)){d.setAttribute('data-splash','off');return}sessionStorage.setItem(k,'1')}catch(e){}var t0=Date.now(),done=false;function end(){if(done)return;done=true;setTimeout(function(){d.setAttribute('data-splash','out');setTimeout(function(){d.setAttribute('data-splash','off')},750)},Math.max(0,1750-(Date.now()-t0)))}if(document.readyState==='complete')end();else{window.addEventListener('load',end);setTimeout(end,2300)}})();`;
+const SPLASH_SCRIPT = `(function(){var d=document.documentElement,k='seraj-splash';try{if(sessionStorage.getItem(k)){d.setAttribute('data-splash','off');return}sessionStorage.setItem(k,'1')}catch(e){}var t0=Date.now(),done=false;function end(){if(done)return;done=true;setTimeout(function(){d.setAttribute('data-splash','out');setTimeout(function(){d.setAttribute('data-splash','off')},750)},Math.max(0,2000-(Date.now()-t0)))}if(document.readyState==='complete')end();else{window.addEventListener('load',end);setTimeout(end,2600)}})();`;
 
 export function SerajSplash() {
   return (
